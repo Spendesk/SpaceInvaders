@@ -163,7 +163,7 @@ export default class Level extends Phaser.Scene {
     this.stopBugs(this.bugs);
     this.marvin.body.setVelocityX(0);
 
-    this.cameras.main.shake(20);
+    this.cameras.main.shake();
 
     // add game over screen
     this.setGameOverScreen();
@@ -222,5 +222,6 @@ export default class Level extends Phaser.Scene {
   private restart() {
     this.scene.restart();
     this.isMarvinAlive = true;
+    this.livesArray = [];
   }
 }
