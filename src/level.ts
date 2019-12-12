@@ -2,7 +2,9 @@
 import {
   FONT_FAMILY,
   X_MAX,
-  Y_MAX
+  Y_MAX,
+  VELOCITY,
+  VELOCITY_STEP,
 } from "./global";
 
 export default class Level extends Phaser.Scene {
@@ -12,6 +14,7 @@ export default class Level extends Phaser.Scene {
   private initialLivesCount = 5;
   private livesArray = [];
   private score = 0;
+  private rotation = 0;
 
   // marvin and bug physics object(s)
   private lives: Phaser.GameObjects.Group;
@@ -36,6 +39,8 @@ export default class Level extends Phaser.Scene {
     this.load.svg("bug", "assets/bug.svg");
     this.load.svg("life", "assets/life.svg");
     this.load.svg("receipt", "assets/receipt.svg")
+    this.load.svg("receipt", "assets/receipt.svg")
+    this.load.svg("slack", "assets/slack.svg")
     this.isMarvinAlive = true;
   }
 
@@ -46,11 +51,11 @@ export default class Level extends Phaser.Scene {
     this.setBugs();
     this.setTopBar();
     this.setReceipts();
+    this.setSlackCard();
     this.physics.add.overlap(this.bugs, this.marvin, () => null);
     this.physics.add.overlap(this.receipts, this.marvin, this.collectReceipt, null, this);
     this.score = 0;
-    this.scoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
-
+    this.scoreText = this.add.text(10, 10, 'score: 0', { fontSize: '25px', fill: '#000' });
   }
 
   update() {
@@ -59,12 +64,19 @@ export default class Level extends Phaser.Scene {
     }
   }
 
+  private setSlackCard() {
+    const image = this.add.image(X_MAX / 2 - 240, Y_MAX - 50, "slack");
+    image.setScale(0.6);
+  }
+
   private touchedByBug(marvin, bug) {
     this.bugs.remove(bug, true, true);
     this.removeOneLife();
-    console.log('COUNT!', this.livesCount)
     if (!this.livesCount) {
       this.marvinDeath();
+    } else {
+      this.marvin.setAlpha(0.5, 0.5, 0.5, 0.5);
+      setTimeout(() => {this.marvin.setAlpha(1, 1, 1, 1)}, 800);
     }
   }
 
@@ -107,8 +119,14 @@ export default class Level extends Phaser.Scene {
 
     if (cursorKeys.right.isDown) {
       this.marvin.body.setVelocityX(500);
+      if (this.marvin.body.rotation < 10) {
+        this.marvin.body.rotation++;
+      }
     } else if (cursorKeys.left.isDown) {
       this.marvin.body.setVelocityX(-500);
+      if (this.marvin.body.rotation > -10) {
+        this.marvin.body.rotation--;
+      }
     } else {
       this.marvin.body.setVelocity(0);
     }
@@ -118,7 +136,7 @@ export default class Level extends Phaser.Scene {
     if (this.isMarvinAlive) {
       const x = Phaser.Math.Between(70, 730)
       var bug = this.bugs.create(x, 10, 'bug');
-      bug.setScale(0.5);
+      bug.setScale(0.3);
       bug.setVelocity(0, 200);
       bug.allowGravity = false;
       this.physics.add.overlap(this.marvin, bug, this.touchedByBug);
@@ -163,7 +181,7 @@ export default class Level extends Phaser.Scene {
     this.stopBugs(this.bugs);
     this.marvin.body.setVelocityX(0);
 
-    this.cameras.main.shake();
+    //this.cameras.main.shake();
 
     // add game over screen
     this.setGameOverScreen();
