@@ -1,6 +1,6 @@
 import { FONT_FAMILY } from "./global";
 export default class MainMenu extends Phaser.Scene {
-  private readonly HEADER_TEXT = "Space Invaders";
+  private readonly HEADER_TEXT = "Marvin's life";
 
   constructor() {
     super("MainMenu");

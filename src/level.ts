@@ -6,6 +6,7 @@ import {
   VELOCITY,
   VELOCITY_STEP,
 } from "./global";
+import { exists } from "fs";
 
 export default class Level extends Phaser.Scene {
   // marvin properties
@@ -15,6 +16,7 @@ export default class Level extends Phaser.Scene {
   private livesArray = [];
   private score = 0;
   private rotation = 0;
+  private marvinDamaged = false;
 
   // marvin and bug physics object(s)
   private lives: Phaser.GameObjects.Group;
@@ -30,6 +32,7 @@ export default class Level extends Phaser.Scene {
     this.addOneBug = this.addOneBug.bind(this);
     this.addOneReceipt = this.addOneReceipt.bind(this);
     this.touchedByBug = this.touchedByBug.bind(this);
+    this.setMarvinAllRight = this.setMarvinAllRight.bind(this);
     setInterval((this.addOneBug), 3000);
     setInterval((this.addOneReceipt), 2800);
   }
@@ -37,7 +40,7 @@ export default class Level extends Phaser.Scene {
   preload() {
     this.load.svg("marvin", "assets/marvin.svg");
     this.load.svg("bug", "assets/bug.svg");
-    this.load.svg("life", "assets/life.svg");
+    this.load.svg("life", "assets/heart.svg");
     this.load.svg("receipt", "assets/receipt.svg")
     this.load.svg("receipt", "assets/receipt.svg")
     this.load.svg("slack", "assets/slack.svg")
@@ -70,14 +73,27 @@ export default class Level extends Phaser.Scene {
   }
 
   private touchedByBug(marvin, bug) {
+    if (this.marvinDamaged) {
+      return;
+    }
     this.bugs.remove(bug, true, true);
     this.removeOneLife();
     if (!this.livesCount) {
       this.marvinDeath();
     } else {
-      this.marvin.setAlpha(0.5, 0.5, 0.5, 0.5);
-      setTimeout(() => {this.marvin.setAlpha(1, 1, 1, 1)}, 800);
+      this.setMarvinDamaged();
+      setTimeout(this.setMarvinAllRight, 1000);
     }
+  }
+
+  private setMarvinDamaged() {
+    this.marvin.setAlpha(0.5, 0.5, 0.5, 0.5);
+    this.marvinDamaged = true;
+  }
+
+  private setMarvinAllRight() {
+    this.marvin.setAlpha(1, 1, 1, 1);
+    this.marvinDamaged = false;
   }
 
   private setMarvin() {
@@ -108,7 +124,7 @@ export default class Level extends Phaser.Scene {
 
   private addOneLife() {
     const image = this.add.image(X_MAX - 20 - this.livesCount * 20, 20, "life");
-    image.scale = 0.05;
+    image.scale = 0.15;
     this.lives.add(image);
     this.livesArray.push(image);
     this.livesCount++;
