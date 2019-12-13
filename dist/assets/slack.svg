@@ -11,7 +11,20 @@
 		<image href="https://i0.wp.com/www.t-p.tf/wp-content/uploads/2018/06/fluid-loader.gif" x="0" y="0" width="31" height="30"> </image>
 	</pattern>
 </defs>
-
+<style type="text/css">
+	@font-face {
+		font-family: "Lato-Regular";
+		src: url("../fonts/Lato-Regular.woff");
+	}
+	@font-face {
+		font-family: "Lato-Bold";
+		src: url("../fonts/Lato-Bold.woff");
+	}
+	@font-face {
+		font-family: "Lato-Light";
+		src: url("../fonts/Lato-Light.woff");
+	}
+</style>
 <style type="text/css">
 	.st0{display:none;fill:#FFFFFF;stroke:#000000;stroke-miterlimit:10;}
 	.st1{fill:#4B314B;}
