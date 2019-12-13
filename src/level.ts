@@ -78,6 +78,7 @@ export default class Level extends Phaser.Scene {
       this.physics.world.bounds.height / 2 - 60,
       this.rulesText1,
       {
+        fontFamily: FONT_FAMILY,
         fontSize: '40px',
         fill: '#fff'
       }
@@ -87,6 +88,7 @@ export default class Level extends Phaser.Scene {
       this.physics.world.bounds.height / 2,
       this.rulesText2,
       {
+        fontFamily: FONT_FAMILY,
         fontSize: '40px',
         fill: '#fff'
       }
@@ -314,9 +316,21 @@ export default class Level extends Phaser.Scene {
     );
     gameOver.setOrigin(0.5);
 
+    const finalScore = this.add.text(
+      this.physics.world.bounds.width / 2,
+      this.physics.world.bounds.height / 2 - 40,
+      `Score: ${this.score}`,
+      {
+        fontFamily: FONT_FAMILY,
+        fontSize: "35px",
+        fill: "#fff"
+      }
+    );
+    finalScore.setOrigin(0.5);
+
     const mainMenuTxt = this.add.text(
       this.physics.world.bounds.width / 2,
-      this.physics.world.bounds.height / 2,
+      this.physics.world.bounds.height / 2 + 40,
       "Main Menu",
       {
         fontFamily: FONT_FAMILY,
@@ -334,7 +348,7 @@ export default class Level extends Phaser.Scene {
 
     const tryAgainTxt = this.add.text(
       this.physics.world.bounds.width / 2,
-      this.physics.world.bounds.height / 2 + 40,
+      this.physics.world.bounds.height / 2 + 80,
       "Try Again",
       {
         fontFamily: FONT_FAMILY,
