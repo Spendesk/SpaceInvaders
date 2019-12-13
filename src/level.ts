@@ -55,7 +55,11 @@ export default class Level extends Phaser.Scene {
   }
 
   async setSlackMembers() {
-    this.slackMembers = await getUsersList();
+    try {
+      this.slackMembers = await getUsersList();
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   preload() {
