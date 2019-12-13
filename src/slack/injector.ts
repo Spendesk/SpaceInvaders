@@ -6,7 +6,6 @@ function findInElement (
   container: any,
   selector: string,
 ): HTMLElement {
-  console.log({container, selector, content: container.contentDocument, obj: container.contentDocument.querySelector(selector)})
   return container.contentDocument.querySelector(selector);
 }
 
@@ -15,7 +14,7 @@ function displaySlackBlock () {
   slackContainer.style.visibility = 'visible';
 }
 
-function updateSlackAssets (
+export function updateSlackAssets (
   avatarUrl: string,
   providerLogoUrl: string,
   userName: string,

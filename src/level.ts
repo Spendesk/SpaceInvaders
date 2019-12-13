@@ -9,7 +9,7 @@ import {
   DELAY_STEP_BUGS,
   DELAY_STEP_RECEIPTS,
 } from "./global";
-import { injectSlackCard } from './slack';
+import { injectSlackCard, SlackMember, getUsersList } from './slack';
 
 export default class Level extends Phaser.Scene {
   // marvin properties
@@ -43,6 +43,7 @@ export default class Level extends Phaser.Scene {
   private marvin: Phaser.Physics.Arcade.Sprite & {
     body: Phaser.Physics.Arcade.Body;
   };
+  private slackMembers: SlackMember[];
 
   constructor() {
     super("Level");
@@ -50,7 +51,15 @@ export default class Level extends Phaser.Scene {
     this.addOneReceipt = this.addOneReceipt.bind(this);
     this.touchedByBug = this.touchedByBug.bind(this);
     this.setMarvinAllRight = this.setMarvinAllRight.bind(this);
-  
+    this.setSlackMembers();
+  }
+
+  async setSlackMembers() {
+    try {
+      this.slackMembers = await getUsersList();
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   preload() {
@@ -66,7 +75,7 @@ export default class Level extends Phaser.Scene {
     this.load.audio("receipt_collected_1", "assets/musics/receipt_collected/Another_beep.mp3")
     this.load.audio("bug_touched", "assets/musics/bug_touched.mp3")
     this.load.audio("game_over", "assets/musics/game_over.mp3")
-    
+
     this.isMarvinAlive = true;
   }
 
@@ -110,11 +119,40 @@ export default class Level extends Phaser.Scene {
     this.setBugs();
     this.setTopBar();
     this.setReceipts();
-    injectSlackCard('https://ca.slack-edge.com/T3HL6T4QP-UNF485GJ3-623fce59624c-512', 'https://www.weedoo-it.fr/assets/img/logo_payfit.jpg', 'Elisa');
+    this.setRandomSlackCard();
     this.physics.add.overlap(this.bugs, this.marvin, this.touchedByBug, null, this);
     this.physics.add.overlap(this.receipts, this.marvin, this.collectReceipt, null, this);
     this.score = 0;
     this.scoreText = this.add.text(10, 10, 'score: 0', { fontSize: '20px', fill: '#000' });
+  }
+
+  async wait (ms: number): Promise<void> {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => resolve(), ms);
+    });
+  }
+
+  getRandomInteger(max: number): number {
+    return Math.floor(Math.random() * (max + 1));
+  }
+
+  async setRandomSlackCard(nbTries:number = 0) {
+    if (!this.slackMembers || !this.slackMembers.length) {
+      if (nbTries === 5) {
+        throw new Error('Cannot fetch slack members');
+      }
+      await this.wait(500);
+      return this.setRandomSlackCard(nbTries + 1);
+    }
+
+    const nbMembers = this.slackMembers.length;
+    const slackMember = this.slackMembers[this.getRandomInteger(nbMembers - 1)];
+    injectSlackCard(
+      slackMember.avatarUrl,
+      // 'https://www.weedoo-it.fr/assets/img/logo_payfit.jpg',
+      'https://s1.edi-static.fr/Img/PRESTATAIRES/306645/logologo-spendesk-512.png',
+      `${slackMember.firstName || ''} ${slackMember.lastName || ''}`,
+    );
   }
 
   update() {
@@ -128,8 +166,8 @@ export default class Level extends Phaser.Scene {
       this.lastLevelStart = now;
     }
 
-    let delayBug = INITIAL_DELAY_BUGS - DELAY_STEP_BUGS * this.level;  
-    let delayReceipt = INITIAL_DELAY_RECEIPTS - DELAY_STEP_RECEIPTS * this.level;  
+    let delayBug = INITIAL_DELAY_BUGS - DELAY_STEP_BUGS * this.level;
+    let delayReceipt = INITIAL_DELAY_RECEIPTS - DELAY_STEP_RECEIPTS * this.level;
 
     // At the beginning, we want to let some time before starting the game to show rules
     if (this.level === 0) {
@@ -141,7 +179,7 @@ export default class Level extends Phaser.Scene {
       this.rules1.setAlpha(0);
       this.rules2.setAlpha(0);
     }
-    
+
     if (delayBug <= 400) {
       delayBug = 400;
     }
@@ -154,7 +192,7 @@ export default class Level extends Phaser.Scene {
     if (delayReceipt <= 300) {
       delayReceipt = 300;
     }
-    
+
     if (now - this.lastReceiptSent > delayReceipt) {
       this.addOneReceipt();
       this.lastReceiptSent = now;
@@ -272,6 +310,10 @@ export default class Level extends Phaser.Scene {
     receipt.disableBody(true, true);
     this.score += 1;
     this.scoreText.setText('score: ' + this.score);
+
+    if (this.score % 3 === 0) {
+      this.setRandomSlackCard();
+    }
   }
 
   private stopBugs(bugs: Phaser.Physics.Arcade.Group) {

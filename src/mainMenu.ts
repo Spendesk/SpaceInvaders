@@ -53,7 +53,6 @@ export default class MainMenu extends Phaser.Scene {
       .on("pointerover", () => this.input.setDefaultCursor("pointer"))
       .on("pointerout", () => this.input.setDefaultCursor("auto"))
       .on("pointerdown", () => {
-        console.log("starting game");
         this.scene.start("Level");
       });
   }
