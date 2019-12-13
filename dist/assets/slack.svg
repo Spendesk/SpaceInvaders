@@ -5,10 +5,10 @@
 
 <defs>
 	<pattern id="slack-avatar" patternUnits="userSpaceOnUse" width="130" height="125">
-		<image href="https://ca.slack-edge.com/T3HL6T4QP-UC5NXH7K4-21437627c323-512" x="0" y="0" width="105" height="135"> </image>
+		<image href="https://i0.wp.com/www.t-p.tf/wp-content/uploads/2018/06/fluid-loader.gif" x="0" y="0" width="105" height="135"> </image>
 	</pattern>
 	<pattern id="receipt-logo" patternUnits="userSpaceOnUse" width="35" height="30">
-		<image href="https://s1.edi-static.fr/Img/PRESTATAIRES/306645/logologo-spendesk-512.png" x="0" y="0" width="31" height="30"> </image>
+		<image href="https://i0.wp.com/www.t-p.tf/wp-content/uploads/2018/06/fluid-loader.gif" x="0" y="0" width="31" height="30"> </image>
 	</pattern>
 </defs>
 
@@ -2736,6 +2736,6 @@ AAAAAACgP/9fgAEALJOBNwUeIPsAAAAASUVORK5CYII=" transform="matrix(0.3805 0 0 0.380
 	C231.1,111.6,225.7,117,219.1,117z"/>
 <text transform="matrix(1 0 0 1 244.7603 45.8255)" class="st9 st34" id="slack-name">Name</text>
 <text transform="matrix(1 0 0 1 244.7603 83.2077)"><tspan x="0" y="0" class="st4 st35">Hello Marvin! Can you help me</tspan><tspan x="0" y="26.6" class="st4 st35">find</tspan></text>
-<text transform="matrix(1 0 0 1 320.4316 110.2488)" class="st4 st35">receips?</text>
+<text transform="matrix(1 0 0 1 320.4316 110.2488)" class="st4 st35">receipts?</text>
 <rect x="283" y="87.3" width="31.3" height="31.3" class="st36"/>
 </svg>
