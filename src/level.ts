@@ -1,12 +1,14 @@
-//TODO: Add a sentence just after click on START GAME (like "Ready? Go!")
 import {
   FONT_FAMILY,
   X_MAX,
   Y_MAX,
   VELOCITY,
   VELOCITY_STEP,
+  INITIAL_DELAY_BUGS,
+  INITIAL_DELAY_RECEIPTS,
+  DELAY_STEP_BUGS,
+  DELAY_STEP_RECEIPTS,
 } from "./global";
-import { exists } from "fs";
 
 export default class Level extends Phaser.Scene {
   // marvin properties
@@ -15,10 +17,19 @@ export default class Level extends Phaser.Scene {
   private initialLivesCount = 5;
   private livesArray = [];
   private score = 0;
+  private scoreText;
+  private rulesText1 = "Collect the receipts";
+  private rulesText2 = "and avoid bugs!";
+  private alphaRules = false;
   private rotation = 0;
   private marvinDamaged = false;
   private lastLevelStart = new Date().valueOf();
   private level = 0;
+  private lastBugSent = this.lastLevelStart;
+  private lastReceiptSent = this.lastLevelStart;
+
+  private rules1: Phaser.GameObjects.Text;
+  private rules2: Phaser.GameObjects.Text;
 
   // marvin and bug physics object(s)
   private lives: Phaser.GameObjects.Group;
@@ -27,7 +38,6 @@ export default class Level extends Phaser.Scene {
   private marvin: Phaser.Physics.Arcade.Sprite & {
     body: Phaser.Physics.Arcade.Body;
   };
-  private scoreText;
 
   constructor() {
     super("Level");
@@ -35,8 +45,7 @@ export default class Level extends Phaser.Scene {
     this.addOneReceipt = this.addOneReceipt.bind(this);
     this.touchedByBug = this.touchedByBug.bind(this);
     this.setMarvinAllRight = this.setMarvinAllRight.bind(this);
-    setInterval((this.addOneBug), 3000);
-    setInterval((this.addOneReceipt), 2800);
+  
   }
 
   preload() {
@@ -52,12 +61,34 @@ export default class Level extends Phaser.Scene {
   create() {
     // ** NOTE: create() is only called the first time the scene is created
     // it does not get called when scene is restarted or reloaded
+    this.rules1 = this.add.text(
+      this.physics.world.bounds.width / 2,
+      this.physics.world.bounds.height / 2 - 60,
+      this.rulesText1,
+      {
+        fontSize: '40px',
+        fill: '#fff'
+      }
+    )
+    this.rules2 = this.add.text(
+      this.physics.world.bounds.width / 2,
+      this.physics.world.bounds.height / 2,
+      this.rulesText2,
+      {
+        fontSize: '40px',
+        fill: '#fff'
+      }
+    )
+    this.rules1.setOrigin(0.5);
+    this.rules2.setOrigin(0.5);
+
     this.setMarvin();
     this.setBugs();
     this.setTopBar();
     this.setReceipts();
     //this.setSlackCard();
-    this.physics.add.overlap(this.bugs, this.marvin, () => null);
+    
+    this.physics.add.overlap(this.bugs, this.marvin, this.touchedByBug, null, this);
     this.physics.add.overlap(this.receipts, this.marvin, this.collectReceipt, null, this);
     this.score = 0;
     this.scoreText = this.add.text(10, 10, 'score: 0', { fontSize: '20px', fill: '#000' });
@@ -68,9 +99,42 @@ export default class Level extends Phaser.Scene {
       this.setMarvinMovement();
     }
     const now = new Date().valueOf();
+
     if (now - this.lastLevelStart > 10000) {
       this.level++;
       this.lastLevelStart = now;
+    }
+
+    let delayBug = INITIAL_DELAY_BUGS - DELAY_STEP_BUGS * this.level;  
+    let delayReceipt = INITIAL_DELAY_RECEIPTS - DELAY_STEP_RECEIPTS * this.level;  
+
+    // At the beginning, we want to let some time before starting the game to show rules
+    if (this.level === 0) {
+      delayBug = 7300;
+      delayReceipt = 6000;
+    }
+
+    if (now - this.lastLevelStart > 6000) {
+      this.rules1.setAlpha(0);
+      this.rules2.setAlpha(0);
+    }
+    
+    if (delayBug <= 400) {
+      delayBug = 400;
+    }
+
+    if (now - this.lastBugSent > delayBug) {
+      this.addOneBug();
+      this.lastBugSent = now;
+    }
+
+    if (delayReceipt <= 300) {
+      delayReceipt = 300;
+    }
+    
+    if (now - this.lastReceiptSent > delayReceipt) {
+      this.addOneReceipt();
+      this.lastReceiptSent = now;
     }
   }
 
@@ -169,7 +233,6 @@ export default class Level extends Phaser.Scene {
       bug.setScale(0.3);
       bug.setVelocity(0, VELOCITY + this.level * VELOCITY_STEP);
       bug.allowGravity = false;
-      this.physics.add.overlap(this.marvin, bug, this.touchedByBug);
     }
   }
 
