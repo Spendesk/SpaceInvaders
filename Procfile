@@ -1,1 +1,1 @@
-web: rollup --watch --config rollup.config.dev.js
+web: rollup --config rollup.config.dev.js
