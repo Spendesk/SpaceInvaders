@@ -8,6 +8,7 @@ import {
   INITIAL_DELAY_RECEIPTS,
   DELAY_STEP_BUGS,
   DELAY_STEP_RECEIPTS,
+  PROVIDERS,
 } from "./global";
 import { injectSlackCard, SlackMember, getUsersList } from './slack';
 
@@ -66,15 +67,17 @@ export default class Level extends Phaser.Scene {
     this.load.svg("marvin", "assets/marvin.svg");
     this.load.svg("bug", "assets/bug.svg");
     this.load.svg("life", "assets/heart.svg");
-    this.load.svg("receipt", "assets/receipt.svg")
-    this.load.svg("spendesk", "assets/spendesk.svg")
-    this.load.svg("slack", "assets/slack.svg")
-    this.load.audio("receipt_collected_4", "assets/musics/receipt_collected/Another_beep.mp3")
-    this.load.audio("receipt_collected_2", "assets/musics/receipt_collected/Playful_R2D2.mp3")
-    this.load.audio("receipt_collected_3", "assets/musics/receipt_collected/R2_beeping_happily.mp3")
-    this.load.audio("receipt_collected_1", "assets/musics/receipt_collected/Another_beep.mp3")
-    this.load.audio("bug_touched", "assets/musics/bug_touched.mp3")
-    this.load.audio("game_over", "assets/musics/game_over.mp3")
+    for (const provider of PROVIDERS) {
+      this.load.svg(`receipt-${provider}`, `assets/receipts/${provider}.svg`);
+    }
+    this.load.svg("spendesk", "assets/spendesk.svg");
+    this.load.svg("slack", "assets/slack.svg");
+    this.load.audio("receipt_collected_4", "assets/musics/receipt_collected/Another_beep.mp3");
+    this.load.audio("receipt_collected_2", "assets/musics/receipt_collected/Playful_R2D2.mp3");
+    this.load.audio("receipt_collected_3", "assets/musics/receipt_collected/R2_beeping_happily.mp3");
+    this.load.audio("receipt_collected_1", "assets/musics/receipt_collected/Another_beep.mp3");
+    this.load.audio("bug_touched", "assets/musics/bug_touched.mp3");
+    this.load.audio("game_over", "assets/musics/game_over.mp3");
 
     this.isMarvinAlive = true;
   }
@@ -136,6 +139,18 @@ export default class Level extends Phaser.Scene {
     return Math.floor(Math.random() * (max + 1));
   }
 
+  getRandomSlackMember(): SlackMember {
+    const nbMembers = this.slackMembers.length;
+    const slackMember = this.slackMembers[this.getRandomInteger(nbMembers - 1)];
+    return slackMember;
+  }
+
+  getRandomProviderName(): string {
+    const nbProviders = PROVIDERS.length;
+    const providerName = PROVIDERS[this.getRandomInteger(nbProviders - 1)];
+    return providerName;
+  }
+
   async setRandomSlackCard(nbTries:number = 0) {
     if (!this.slackMembers || !this.slackMembers.length) {
       if (nbTries === 5) {
@@ -145,12 +160,11 @@ export default class Level extends Phaser.Scene {
       return this.setRandomSlackCard(nbTries + 1);
     }
 
-    const nbMembers = this.slackMembers.length;
-    const slackMember = this.slackMembers[this.getRandomInteger(nbMembers - 1)];
+    const slackMember = this.getRandomSlackMember();
+    const providerName = this.getRandomProviderName();
     injectSlackCard(
       slackMember.avatarUrl,
-      // 'https://www.weedoo-it.fr/assets/img/logo_payfit.jpg',
-      'https://s1.edi-static.fr/Img/PRESTATAIRES/306645/logologo-spendesk-512.png',
+      `logos/${providerName}.svg`,
       `${slackMember.firstName || ''} ${slackMember.lastName || ''}`,
     );
   }
@@ -298,7 +312,8 @@ export default class Level extends Phaser.Scene {
   private addOneReceipt() {
     if (this.isMarvinAlive) {
       const x = Phaser.Math.Between(70, 730)
-      var receipt = this.receipts.create(x, 10, 'receipt');
+      const providerName = this.getRandomProviderName();
+      const receipt = this.receipts.create(x, 10, `receipt-${providerName}`);
       receipt.setScale(0.7);
       receipt.setVelocity(0, VELOCITY + this.level * VELOCITY_STEP);
       receipt.allowGravity = false;

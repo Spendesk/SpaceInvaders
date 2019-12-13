@@ -13,3 +13,6 @@ node_modules/
 /npm-debug.log
 !dist/assets
 !dist/index.html
+
+# Config files
+src/slack/config.ts
