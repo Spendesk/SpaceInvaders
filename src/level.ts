@@ -17,6 +17,8 @@ export default class Level extends Phaser.Scene {
   private score = 0;
   private rotation = 0;
   private marvinDamaged = false;
+  private lastLevelStart = new Date().valueOf();
+  private level = 0;
 
   // marvin and bug physics object(s)
   private lives: Phaser.GameObjects.Group;
@@ -65,10 +67,15 @@ export default class Level extends Phaser.Scene {
     if (this.isMarvinAlive) {
       this.setMarvinMovement();
     }
+    const now = new Date().valueOf();
+    if (now - this.lastLevelStart > 10000) {
+      this.level++;
+      this.lastLevelStart = now;
+    }
   }
 
   private setSlackCard() {
-    const image = this.add.image(X_MAX / 2 - 240, Y_MAX - 50, "slack");
+    const image = this.add.image(X_MAX / 2 - 280, Y_MAX - 50, "slack");
     image.setScale(0.6);
   }
 
@@ -135,15 +142,22 @@ export default class Level extends Phaser.Scene {
 
     if (cursorKeys.right.isDown) {
       this.marvin.body.setVelocityX(500);
-      if (this.marvin.body.rotation < 10) {
+      if (this.marvin.body.rotation < 15) {
         this.marvin.body.rotation++;
       }
     } else if (cursorKeys.left.isDown) {
       this.marvin.body.setVelocityX(-500);
-      if (this.marvin.body.rotation > -10) {
+      if (this.marvin.body.rotation > -15) {
         this.marvin.body.rotation--;
       }
     } else {
+      // If pressing nothing then stabilize
+      if (this.marvin.body.rotation * Math.sign(this.marvin.body.rotation) < 2) {
+        this.marvin.body.rotation = 0;
+      }
+      if (this.marvin.body.rotation != 0) {
+        this.marvin.body.rotation -= Math.sign(this.marvin.body.rotation) * 1;
+      }
       this.marvin.body.setVelocity(0);
     }
   }
@@ -153,7 +167,7 @@ export default class Level extends Phaser.Scene {
       const x = Phaser.Math.Between(70, 730)
       var bug = this.bugs.create(x, 10, 'bug');
       bug.setScale(0.3);
-      bug.setVelocity(0, 200);
+      bug.setVelocity(0, VELOCITY + this.level * VELOCITY_STEP);
       bug.allowGravity = false;
       this.physics.add.overlap(this.marvin, bug, this.touchedByBug);
     }
@@ -164,7 +178,7 @@ export default class Level extends Phaser.Scene {
       const x = Phaser.Math.Between(70, 730)
       var receipt = this.receipts.create(x, 10, 'receipt');
       receipt.setScale(0.7);
-      receipt.setVelocity(0, 300);
+      receipt.setVelocity(0, VELOCITY + this.level * VELOCITY_STEP);
       receipt.allowGravity = false;
     }
   }
@@ -257,5 +271,6 @@ export default class Level extends Phaser.Scene {
     this.scene.restart();
     this.isMarvinAlive = true;
     this.livesArray = [];
+    this.level = 0;
   }
 }
