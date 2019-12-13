@@ -6,9 +6,12 @@ export type SlackMember = {
 
 export async function getUsersList (): Promise<SlackMember[]> {
   const response = await fetch(
-    'https://slack.com/api/users.list?token=xoxb-119686922839-872066684116-dJs7JKrjqd5rHhqgSOEwDB05',
+    'https://slack.com/api/users.list?token=xoxb-119686922839-872066684116-Rb9lC5ZHHN7JdV7A0tdpwC7v',
   );
   const list = await response.json();
+  if (list.error) {
+    throw new Error(`Cannot fetch slack users: ${list.error}`);
+  }
   const { members } = list;
   const users = members.reduce(
     (accumulator, member) => {
