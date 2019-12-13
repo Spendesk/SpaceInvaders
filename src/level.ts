@@ -44,7 +44,7 @@ export default class Level extends Phaser.Scene {
     this.load.svg("bug", "assets/bug.svg");
     this.load.svg("life", "assets/heart.svg");
     this.load.svg("receipt", "assets/receipt.svg")
-    this.load.svg("receipt", "assets/receipt.svg")
+    this.load.svg("spendesk", "assets/spendesk.svg")
     this.load.svg("slack", "assets/slack.svg")
     this.isMarvinAlive = true;
   }
@@ -56,11 +56,11 @@ export default class Level extends Phaser.Scene {
     this.setBugs();
     this.setTopBar();
     this.setReceipts();
-    this.setSlackCard();
+    //this.setSlackCard();
     this.physics.add.overlap(this.bugs, this.marvin, () => null);
     this.physics.add.overlap(this.receipts, this.marvin, this.collectReceipt, null, this);
     this.score = 0;
-    this.scoreText = this.add.text(10, 10, 'score: 0', { fontSize: '25px', fill: '#000' });
+    this.scoreText = this.add.text(10, 10, 'score: 0', { fontSize: '20px', fill: '#000' });
   }
 
   update() {
@@ -272,5 +272,7 @@ export default class Level extends Phaser.Scene {
     this.isMarvinAlive = true;
     this.livesArray = [];
     this.level = 0;
+    this.marvinDamaged = false;
+    this.lastLevelStart = new Date().valueOf();
   }
 }
