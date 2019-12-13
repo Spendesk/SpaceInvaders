@@ -130,7 +130,7 @@
 	<text transform="matrix(1 0 0 1 248.0418 125.129)" class="st23 st4 st24">&lt;/&gt;</text>
 </g>
 <g id="jK4NXZ.tif" class="st10">
-	
+
 		<image style="display:inline;overflow:visible;" width="2356" height="506" id="Layer_0_1_" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAACTUAAAH9CAYAAADBZwqYAAAACXBIWXMAAB0QAAAdEAGxhstDAAAA
 GXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAACPehJREFUeNrsvQd0nNd5rvtOATDo
 vfdGEOy9UyySJavbsmxVy2kux44t27mxk9y7VnJWzl13pdkncclJXNS7m2Q1SiRV2CsIEgBBAETv
@@ -2734,7 +2734,7 @@ AAAAAACgP/9fgAEALJOBNwUeIPsAAAAASUVORK5CYII=" transform="matrix(0.3805 0 0 0.380
 </g>
 <path class="st33" d="M219.1,117h-72.8c-6.6,0-12-5.4-12-12V32.2c0-6.6,5.4-12,12-12h72.8c6.6,0,12,5.4,12,12V105
 	C231.1,111.6,225.7,117,219.1,117z"/>
-<text transform="matrix(1 0 0 1 244.7603 45.8255)" class="st9 st34">Name</text>
+<text transform="matrix(1 0 0 1 244.7603 45.8255)" class="st9 st34" id="slack-name">Name</text>
 <text transform="matrix(1 0 0 1 244.7603 83.2077)"><tspan x="0" y="0" class="st4 st35">Hello Marvin! Can you help me</tspan><tspan x="0" y="26.6" class="st4 st35">find</tspan></text>
 <text transform="matrix(1 0 0 1 320.4316 110.2488)" class="st4 st35">receips?</text>
 <rect x="283" y="87.3" width="31.3" height="31.3" class="st36"/>

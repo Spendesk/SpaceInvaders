@@ -6,6 +6,7 @@ import MainMenu from "./mainMenu";
 const config = {
   type: Phaser.AUTO,
   backgroundColor: "#60a797",
+  parent: 'game',
   width: X_MAX, // canvas properties
   height: Y_MAX, // canvas properties,
   physics: {

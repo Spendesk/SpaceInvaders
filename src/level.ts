@@ -6,6 +6,7 @@ import {
   VELOCITY,
   VELOCITY_STEP,
 } from "./global";
+import { injectSlackCard } from './slack';
 import { exists } from "fs";
 
 export default class Level extends Phaser.Scene {
@@ -56,7 +57,7 @@ export default class Level extends Phaser.Scene {
     this.setBugs();
     this.setTopBar();
     this.setReceipts();
-    //this.setSlackCard();
+    injectSlackCard('https://ca.slack-edge.com/T3HL6T4QP-UNF485GJ3-623fce59624c-512', 'https://www.weedoo-it.fr/assets/img/logo_payfit.jpg', 'Elisa');
     this.physics.add.overlap(this.bugs, this.marvin, () => null);
     this.physics.add.overlap(this.receipts, this.marvin, this.collectReceipt, null, this);
     this.score = 0;
@@ -72,11 +73,6 @@ export default class Level extends Phaser.Scene {
       this.level++;
       this.lastLevelStart = now;
     }
-  }
-
-  private setSlackCard() {
-    const image = this.add.image(X_MAX / 2 - 280, Y_MAX - 50, "slack");
-    image.setScale(0.6);
   }
 
   private touchedByBug(marvin, bug) {
