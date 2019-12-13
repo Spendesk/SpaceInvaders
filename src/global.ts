@@ -9,3 +9,11 @@ export const INITIAL_DELAY_BUGS = 3000;
 export const INITIAL_DELAY_RECEIPTS = 2500;
 export const DELAY_STEP_BUGS = 300;
 export const DELAY_STEP_RECEIPTS = 270;
+export const PROVIDERS = [
+  'spendesk',
+  'uber',
+  'payfit',
+  'airbnb',
+  'drive',
+  'linkedin',
+];
