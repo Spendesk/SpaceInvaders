@@ -1,3 +1,5 @@
+import { token } from './config';
+
 export type SlackMember = {
   firstName: string;
   lastName: string;
@@ -6,7 +8,7 @@ export type SlackMember = {
 
 export async function getUsersList (): Promise<SlackMember[]> {
   const response = await fetch(
-    'https://slack.com/api/users.list?token=xoxb-119686922839-872066684116-Rb9lC5ZHHN7JdV7A0tdpwC7v',
+    `https://slack.com/api/users.list?token=${token}`,
   );
   const list = await response.json();
   if (list.error) {
