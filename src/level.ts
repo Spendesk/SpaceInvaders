@@ -33,9 +33,9 @@ export default class Level extends Phaser.Scene {
   private rules1: Phaser.GameObjects.Text;
   private rules2: Phaser.GameObjects.Text;
 
-  private receipt_collected_sounds: any[];
-  private bug_touched_sound: any;
-  private game_over_sound: any;
+  private receiptCollectedSounds: any[];
+  private bugTouchedSound: any;
+  private gameOverSound: any;
 
   // marvin and bug physics object(s)
   private lives: Phaser.GameObjects.Group;
@@ -45,6 +45,7 @@ export default class Level extends Phaser.Scene {
     body: Phaser.Physics.Arcade.Body;
   };
   private slackMembers: SlackMember[];
+  private waitingForProvider: string;
 
   constructor() {
     super("Level");
@@ -72,7 +73,7 @@ export default class Level extends Phaser.Scene {
     }
     this.load.svg("spendesk", "assets/spendesk.svg");
     this.load.svg("slack", "assets/slack.svg");
-    this.load.audio("receipt_collected_4", "assets/musics/receipt_collected/Another_beep.mp3");
+    this.load.audio("receipt_collected_4", "assets/musics/receipt_collected/R2_beeping.mp3");
     this.load.audio("receipt_collected_2", "assets/musics/receipt_collected/Playful_R2D2.mp3");
     this.load.audio("receipt_collected_3", "assets/musics/receipt_collected/R2_beeping_happily.mp3");
     this.load.audio("receipt_collected_1", "assets/musics/receipt_collected/Another_beep.mp3");
@@ -108,15 +109,15 @@ export default class Level extends Phaser.Scene {
     this.rules1.setOrigin(0.5);
     this.rules2.setOrigin(0.5);
 
-    this.receipt_collected_sounds = [
+    this.receiptCollectedSounds = [
       this.sound.add('receipt_collected_1'),
       this.sound.add('receipt_collected_2'),
       this.sound.add('receipt_collected_3'),
       this.sound.add('receipt_collected_4'),
     ]
 
-    this.bug_touched_sound = this.sound.add('bug_touched');
-    this.game_over_sound = this.sound.add('game_over');
+    this.bugTouchedSound = this.sound.add('bug_touched');
+    this.gameOverSound = this.sound.add('game_over');
 
     this.setMarvin();
     this.setBugs();
@@ -162,6 +163,7 @@ export default class Level extends Phaser.Scene {
 
     const slackMember = this.getRandomSlackMember();
     const providerName = this.getRandomProviderName();
+    this.waitingForProvider = providerName;
     injectSlackCard(
       slackMember.avatarUrl,
       `logos/${providerName}.svg`,
@@ -218,7 +220,7 @@ export default class Level extends Phaser.Scene {
       return;
     }
     if(this.livesCount) {
-      this.bug_touched_sound.play();
+      this.bugTouchedSound.play();
     }
     this.bugs.remove(bug, true, true);
     this.removeOneLife();
@@ -314,6 +316,7 @@ export default class Level extends Phaser.Scene {
       const x = Phaser.Math.Between(70, 730)
       const providerName = this.getRandomProviderName();
       const receipt = this.receipts.create(x, 10, `receipt-${providerName}`);
+      receipt.provider = providerName;
       receipt.setScale(0.7);
       receipt.setVelocity(0, VELOCITY + this.level * VELOCITY_STEP);
       receipt.allowGravity = false;
@@ -321,14 +324,16 @@ export default class Level extends Phaser.Scene {
   }
 
   private collectReceipt(marvin, receipt) {
-    this.receipt_collected_sounds[Phaser.Math.Between(0, 3)].play();
     receipt.disableBody(true, true);
-    this.score += 1;
-    this.scoreText.setText('score: ' + this.score);
-
-    if (this.score % 3 === 0) {
+    if (this.waitingForProvider === receipt.provider) {
+      this.receiptCollectedSounds[3].play();
       this.setRandomSlackCard();
+      this.score += 10;
+    } else {
+      this.receiptCollectedSounds[Phaser.Math.Between(0, 2)].play();
+      this.score += 1;
     }
+    this.scoreText.setText('score: ' + this.score);
   }
 
   private stopBugs(bugs: Phaser.Physics.Arcade.Group) {
@@ -346,7 +351,7 @@ export default class Level extends Phaser.Scene {
    * game over screen
    */
   private marvinDeath() {
-    this.game_over_sound.play();
+    this.gameOverSound.play();
     this.isMarvinAlive = false;
     this.bugs.clear(true, true);
     this.receipts.clear(true, true);
