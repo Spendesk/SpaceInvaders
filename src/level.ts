@@ -1,3 +1,5 @@
+//TODO: Add a text "+1" when marvin grabs a receipt
+
 import {
   FONT_FAMILY,
   X_MAX,
@@ -13,37 +15,44 @@ import {
 import { injectSlackCard, SlackMember, getUsersList } from './slack';
 
 export default class Level extends Phaser.Scene {
-  // marvin properties
-  private isMarvinAlive: boolean = true;
-  private livesCount = 0;
-  private initialLivesCount = 5;
-  private livesArray = [];
-  private score = 0;
-  private scoreText;
-  private rulesText1 = "Collect the receipts";
-  private rulesText2 = "and avoid bugs!";
-  private alphaRules = false;
-  private rotation = 0;
-  private marvinDamaged = false;
-  private lastLevelStart = new Date().valueOf();
-  private level = 0;
-  private lastBugSent = this.lastLevelStart;
-  private lastReceiptSent = this.lastLevelStart;
 
+  // Rules properties
   private rules1: Phaser.GameObjects.Text;
   private rules2: Phaser.GameObjects.Text;
 
-  private receiptCollectedSounds: any[];
-  private bugTouchedSound: any;
-  private gameOverSound: any;
+  // Score properties
+  private score;
+  private scoreText: Phaser.GameObjects.Text;
 
-  // marvin and bug physics object(s)
+  // Lives properties
+  private livesCount = 0;
+  private initialLivesCount = 5;
+  private livesArray = [];
   private lives: Phaser.GameObjects.Group;
+
+  // Level properties
+  private lastLevelStart = new Date().valueOf();
+  private level;
+
+  // Bugs properties
   private bugs: Phaser.Physics.Arcade.Group;
+  private lastBugSent = this.lastLevelStart;
+  private bugTouchedSound: any;
+  
+  // Receipts properties
   private receipts: Phaser.Physics.Arcade.Group;
+  private lastReceiptSent = this.lastLevelStart;
+  private receiptCollectedSounds: any[];
+
+  // Marvin properties
   private marvin: Phaser.Physics.Arcade.Sprite & {
     body: Phaser.Physics.Arcade.Body;
   };
+  private isMarvinAlive: boolean = true;
+  private marvinDamaged = false;
+  
+  // Other properties
+  private gameOverSound: any;
   private slackMembers: SlackMember[];
   private waitingForProvider: string;
 
@@ -60,17 +69,20 @@ export default class Level extends Phaser.Scene {
     try {
       this.slackMembers = await getUsersList();
     } catch (error) {
-      console.log(error);
+      console.log('error :', error);
     }
   }
 
   preload() {
+    // Images
     this.load.svg("marvin", "assets/marvin.svg");
     this.load.svg("bug", "assets/bug.svg");
     this.load.svg("life", "assets/heart.svg");
     for (const provider of PROVIDERS) {
       this.load.svg(`receipt-${provider}`, `assets/receipts/${provider}.svg`);
     }
+
+    // Sounds
     this.load.svg("spendesk", "assets/spendesk.svg");
     this.load.svg("slack", "assets/slack.svg");
     this.load.audio("receipt_collected_4", "assets/musics/receipt_collected/R2_beeping.mp3");
@@ -84,12 +96,11 @@ export default class Level extends Phaser.Scene {
   }
 
   create() {
-    // ** NOTE: create() is only called the first time the scene is created
-    // it does not get called when scene is restarted or reloaded
+    // Set images
     this.rules1 = this.add.text(
       this.physics.world.bounds.width / 2,
       this.physics.world.bounds.height / 2 - 60,
-      this.rulesText1,
+      "Collect the receipts",
       {
         fontFamily: FONT_FAMILY,
         fontSize: '40px',
@@ -99,7 +110,7 @@ export default class Level extends Phaser.Scene {
     this.rules2 = this.add.text(
       this.physics.world.bounds.width / 2,
       this.physics.world.bounds.height / 2,
-      this.rulesText2,
+      "and avoid bugs!",
       {
         fontFamily: FONT_FAMILY,
         fontSize: '40px',
@@ -109,27 +120,32 @@ export default class Level extends Phaser.Scene {
     this.rules1.setOrigin(0.5);
     this.rules2.setOrigin(0.5);
 
+    // Set sounds
+    this.bugTouchedSound = this.sound.add('bug_touched');
     this.receiptCollectedSounds = [
       this.sound.add('receipt_collected_1'),
       this.sound.add('receipt_collected_2'),
       this.sound.add('receipt_collected_3'),
       this.sound.add('receipt_collected_4'),
     ]
-
-    this.bugTouchedSound = this.sound.add('bug_touched');
     this.gameOverSound = this.sound.add('game_over');
 
-    this.setMarvin();
-    this.setBugs();
-    this.setTopBar();
-    this.setReceipts();
-    this.setRandomSlackCard();
-    this.physics.add.overlap(this.bugs, this.marvin, this.touchedByBug, null, this);
-    this.physics.add.overlap(this.receipts, this.marvin, this.collectReceipt, null, this);
+    // Set elements
     this.score = 0;
     this.scoreText = this.add.text(10, 10, 'score: 0', { fontSize: '20px', fill: '#000' });
+    this.level = 0;
+    this.setTopBar();
+    this.setBugs();
+    this.setReceipts();
+    this.setMarvin();
+    this.setRandomSlackCard();
+
+    // Set interaction between objects functions
+    this.physics.add.overlap(this.bugs, this.marvin, this.touchedByBug, null, this);
+    this.physics.add.overlap(this.receipts, this.marvin, this.collectReceipt, null, this);
   }
 
+  // Slack card functions
   async wait (ms: number): Promise<void> {
     return new Promise((resolve, reject) => {
       setTimeout(() => resolve(), ms);
@@ -215,6 +231,42 @@ export default class Level extends Phaser.Scene {
     }
   }
 
+  // Lives actions
+  private setTopBar() {
+    this.lives = this.add.group();
+    for (let i = 0; i < this.initialLivesCount; i++){
+      this.addOneLife();
+    }
+  }
+
+  private removeOneLife() {
+    this.lives.remove(this.livesArray[this.livesCount - 1], true, true)
+    this.livesCount--;
+  }
+
+  private addOneLife() {
+    const image = this.add.image(X_MAX - 20 - this.livesCount * 20, 20, "life");
+    image.scale = 0.15;
+    this.lives.add(image);
+    this.livesArray.push(image);
+    this.livesCount++;
+  }
+
+  // Bugs actions
+  private setBugs() {
+    this.bugs = this.physics.add.group();
+  }
+
+  private addOneBug() {
+    if (this.isMarvinAlive) {
+      const x = Phaser.Math.Between(70, 730)
+      var bug = this.bugs.create(x, 10, 'bug');
+      bug.setScale(0.3);
+      bug.setVelocity(0, VELOCITY + this.level * VELOCITY_STEP);
+      bug.allowGravity = false;
+    }
+  }
+
   private touchedByBug(marvin, bug) {
     if (this.marvinDamaged) {
       return;
@@ -232,83 +284,9 @@ export default class Level extends Phaser.Scene {
     }
   }
 
-  private setMarvinDamaged() {
-    this.marvin.setAlpha(0.5, 0.5, 0.5, 0.5);
-    this.marvinDamaged = true;
-  }
-
-  private setMarvinAllRight() {
-    this.marvin.setAlpha(1, 1, 1, 1);
-    this.marvinDamaged = false;
-  }
-
-  private setMarvin() {
-    this.marvin = this.physics.add.image(X_MAX / 2, Y_MAX, "marvin") as any;
-    this.marvin.setScale(0.7);
-    this.marvin.setCollideWorldBounds(true);
-  }
-
-  private setBugs() {
-    this.bugs = this.physics.add.group();
-  }
-
-  private setTopBar() {
-    this.lives = this.add.group();
-    for (let i = 0; i < this.initialLivesCount; i++){
-      this.addOneLife();
-    }
-  }
-
+  // Receipts actions
   private setReceipts() {
     this.receipts = this.physics.add.group();
-  }
-
-  private removeOneLife() {
-    this.lives.remove(this.livesArray[this.livesCount - 1], true, true)
-    this.livesCount--;
-  }
-
-  private addOneLife() {
-    const image = this.add.image(X_MAX - 20 - this.livesCount * 20, 20, "life");
-    image.scale = 0.15;
-    this.lives.add(image);
-    this.livesArray.push(image);
-    this.livesCount++;
-  }
-
-  private setMarvinMovement() {
-    const cursorKeys = this.input.keyboard.createCursorKeys();
-
-    if (cursorKeys.right.isDown) {
-      this.marvin.body.setVelocityX(500);
-      if (this.marvin.body.rotation < 15) {
-        this.marvin.body.rotation++;
-      }
-    } else if (cursorKeys.left.isDown) {
-      this.marvin.body.setVelocityX(-500);
-      if (this.marvin.body.rotation > -15) {
-        this.marvin.body.rotation--;
-      }
-    } else {
-      // If pressing nothing then stabilize
-      if (this.marvin.body.rotation * Math.sign(this.marvin.body.rotation) < 2) {
-        this.marvin.body.rotation = 0;
-      }
-      if (this.marvin.body.rotation != 0) {
-        this.marvin.body.rotation -= Math.sign(this.marvin.body.rotation) * 1;
-      }
-      this.marvin.body.setVelocity(0);
-    }
-  }
-
-  private addOneBug() {
-    if (this.isMarvinAlive) {
-      const x = Phaser.Math.Between(70, 730)
-      var bug = this.bugs.create(x, 10, 'bug');
-      bug.setScale(0.3);
-      bug.setVelocity(0, VELOCITY + this.level * VELOCITY_STEP);
-      bug.allowGravity = false;
-    }
   }
 
   private addOneReceipt() {
@@ -336,35 +314,59 @@ export default class Level extends Phaser.Scene {
     this.scoreText.setText('score: ' + this.score);
   }
 
-  private stopBugs(bugs: Phaser.Physics.Arcade.Group) {
-    Phaser.Actions.Call(
-      bugs.getChildren(),
-      (go: any) => {
-        go.setVelocityX(0);
-      },
-      this
-    );
+  // Marvin actions
+  private setMarvin() {
+    this.marvin = this.physics.add.image(X_MAX / 2, Y_MAX, "marvin") as any;
+    this.marvin.setScale(0.7);
+    this.marvin.setCollideWorldBounds(true);
   }
 
-  /**
-   * Triggers marvin death as well as stops all movement and sets up
-   * game over screen
-   */
+  private setMarvinDamaged() {
+    this.marvin.setAlpha(0.5, 0.5, 0.5, 0.5);
+    this.marvinDamaged = true;
+  }
+
+  private setMarvinAllRight() {
+    this.marvin.setAlpha(1, 1, 1, 1);
+    this.marvinDamaged = false;
+  }
+
+  private setMarvinMovement() {
+    const cursorKeys = this.input.keyboard.createCursorKeys();
+
+    if (cursorKeys.right.isDown) {
+      this.marvin.body.setVelocityX(500);
+      if (this.marvin.body.rotation < 15) {
+        this.marvin.body.rotation++;
+      }
+    } else if (cursorKeys.left.isDown) {
+      this.marvin.body.setVelocityX(-500);
+      if (this.marvin.body.rotation > -15) {
+        this.marvin.body.rotation--;
+      }
+    } else {
+      // If pressing nothing then stabilize
+      if (this.marvin.body.rotation * Math.sign(this.marvin.body.rotation) < 2) {
+        this.marvin.body.rotation = 0;
+      }
+      if (this.marvin.body.rotation != 0) {
+        this.marvin.body.rotation -= Math.sign(this.marvin.body.rotation) * 1;
+      }
+      this.marvin.body.setVelocity(0);
+    }
+  }
+
   private marvinDeath() {
     this.gameOverSound.play();
     this.isMarvinAlive = false;
     this.bugs.clear(true, true);
     this.receipts.clear(true, true);
     this.marvin.body.setVelocityX(0);
-    this.stopBugs(this.bugs);
     this.marvin.body.setVelocityX(0);
-
-    //this.cameras.main.shake();
-
-    // add game over screen
     this.setGameOverScreen();
   }
 
+  // Game over
   private setGameOverScreen() {
     const gameOver = this.add.text(
       this.physics.world.bounds.width / 2,
@@ -427,6 +429,7 @@ export default class Level extends Phaser.Scene {
       .on("pointerdown", () => this.restart());
   }
 
+  // Restart
   private restart() {
     this.scene.restart();
     this.isMarvinAlive = true;
