@@ -31,7 +31,6 @@ export default class MainMenu extends Phaser.Scene {
     const spendesk = this.add.image(X_MAX - 40, Y_MAX - 40, "spendesk") as any;
     spendesk.setScale(0.2);
     this.marvin = this.physics.add.image(X_MAX / 2 - 50, Y_MAX / 1.3, "marvin") as any;
-    this.marvin.setScale(0.5);
     header.setOrigin(0.5);
     this.marvin.body.setVelocityX(150);
     this.marvin.body.setAcceleration(-100, 0);
