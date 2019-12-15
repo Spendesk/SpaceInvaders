@@ -86,39 +86,9 @@ export default class Level extends Phaser.Scene {
   create() {
     // ** NOTE: create() is only called the first time the scene is created
     // it does not get called when scene is restarted or reloaded
-    this.rules1 = this.add.text(
-      this.physics.world.bounds.width / 2,
-      this.physics.world.bounds.height / 2 - 60,
-      this.rulesText1,
-      {
-        fontFamily: FONT_FAMILY,
-        fontSize: '40px',
-        fill: '#fff'
-      }
-    )
-    this.rules2 = this.add.text(
-      this.physics.world.bounds.width / 2,
-      this.physics.world.bounds.height / 2,
-      this.rulesText2,
-      {
-        fontFamily: FONT_FAMILY,
-        fontSize: '40px',
-        fill: '#fff'
-      }
-    )
-    this.rules1.setOrigin(0.5);
-    this.rules2.setOrigin(0.5);
-
-    this.receiptCollectedSounds = [
-      this.sound.add('receipt_collected_1'),
-      this.sound.add('receipt_collected_2'),
-      this.sound.add('receipt_collected_3'),
-      this.sound.add('receipt_collected_4'),
-    ]
-
-    this.bugTouchedSound = this.sound.add('bug_touched');
-    this.gameOverSound = this.sound.add('game_over');
-
+    this.setLevel();
+    this.setRules();
+    this.setSounds();
     this.setMarvin();
     this.setBugs();
     this.setTopBar();
@@ -232,6 +202,42 @@ export default class Level extends Phaser.Scene {
     }
   }
 
+  private setRules() {
+    this.rules1 = this.add.text(
+      this.physics.world.bounds.width / 2,
+      this.physics.world.bounds.height / 2 - 60,
+      this.rulesText1,
+      {
+        fontFamily: FONT_FAMILY,
+        fontSize: '40px',
+        fill: '#fff'
+      }
+    )
+    this.rules2 = this.add.text(
+      this.physics.world.bounds.width / 2,
+      this.physics.world.bounds.height / 2,
+      this.rulesText2,
+      {
+        fontFamily: FONT_FAMILY,
+        fontSize: '40px',
+        fill: '#fff'
+      }
+    )
+    this.rules1.setOrigin(0.5);
+    this.rules2.setOrigin(0.5);
+  }
+
+  private setSounds() {
+    this.receiptCollectedSounds = [
+      this.sound.add('receipt_collected_1'),
+      this.sound.add('receipt_collected_2'),
+      this.sound.add('receipt_collected_3'),
+      this.sound.add('receipt_collected_4'),
+    ]
+    this.bugTouchedSound = this.sound.add('bug_touched');
+    this.gameOverSound = this.sound.add('game_over');
+  }
+
   private setMarvinDamaged() {
     this.marvin.setAlpha(0.5, 0.5, 0.5, 0.5);
     this.marvinDamaged = true;
@@ -246,6 +252,8 @@ export default class Level extends Phaser.Scene {
     this.marvin = this.physics.add.image(X_MAX / 2, Y_MAX, "marvin") as any;
     this.marvin.setScale(0.7);
     this.marvin.setCollideWorldBounds(true);
+    this.isMarvinAlive = true;
+    this.marvinDamaged = false;
   }
 
   private setBugs() {
@@ -429,10 +437,12 @@ export default class Level extends Phaser.Scene {
 
   private restart() {
     this.scene.restart();
-    this.isMarvinAlive = true;
-    this.livesArray = [];
+    this.setLevel();
+  }
+
+  private setLevel() {
     this.level = 0;
-    this.marvinDamaged = false;
     this.lastLevelStart = new Date().valueOf();
+    this.livesArray = [];
   }
 }
